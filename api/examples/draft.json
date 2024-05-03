@@ -1,0 +1,22 @@
+{
+    "values": [
+        {
+            "name": "Scenario",
+            "name_id" : "kn033dn3",
+            "value": "Leon A",
+            "value_id": "5le3736q"
+        },
+        {
+            "name": "Category",
+            "name_id" : "789qw3lw",
+            "value": "Any%",
+            "value_id": "21dk9dpl"
+        },
+        {
+            "name": "Difficulty",
+            "name_id" : "jlz197n2",
+            "value": "Normal",
+            "value_id": "gq750dy1"
+        }
+    ]
+}

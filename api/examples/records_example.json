@@ -1,0 +1,100 @@
+{
+  "data": [
+    {
+      "players": {
+        "id": "48gn05yj",
+        "names": {
+            "international": "PyramidK",
+            "japanese": null
+        }
+      },
+      "category": {
+        "data": {
+          "id": "82466qnd",
+          "name": "PC",
+          "type": "per-game"
+        }
+      },
+      "runs": [
+        {
+          "run": {
+            "id": "me3ll79z",
+            "players": [
+                {
+                    "id":"48gn05yj"
+                }
+            ],
+            "level": null,
+            "videos": {
+              "links": [
+                {
+                  "uri": "https://www.youtube.com/watch?v=I4gKsQM34mM"
+                }
+              ]
+            },
+            "times": {
+              "primary_t": 2915
+            },
+            "values": {
+              "kn033dn3": "5le3736q",
+              "789qw3lw": "21dk9dpl",
+              "jlz197n2": "gq750dy1"
+            }
+          }
+        }
+      ],
+      "variables": {
+        "data": [
+          {
+            "id": "kn033dn3",
+            "name": "Scenario",
+            "values": {
+              "values": {
+                "5le3736q": {
+                  "label": "Leon A"
+                },
+                "0q5xjxv1": {
+                  "label": "Claire A"
+                },
+                "4lx070gl": {
+                  "label": "Leon B"
+                },
+                "814k0kkl": {
+                  "label": "Claire B"
+                }
+              }
+            }
+          },
+          {
+            "id": "789qw3lw",
+            "name": "Category",
+            "values": {
+              "values": {
+                "21dk9dpl": {
+                  "label": "Any%"
+                },
+                "5q8kjzyq": {
+                  "label": "Low%"
+                }
+              }
+            }
+          },
+          {
+            "id": "jlz197n2",
+            "name": "Difficulty",
+            "values": {
+              "values": {
+                "gq750dy1": {
+                  "label": "Normal"
+                },
+                "21gnvdml": {
+                  "label": "Hard"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
