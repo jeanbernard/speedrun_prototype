@@ -5,7 +5,10 @@ import (
 	"developer/any/clients/speedrun"
 	"developer/any/dal"
 	database "developer/any/db"
-	"fmt"
+	"os"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func LoadRecords() error {
@@ -13,6 +16,10 @@ func LoadRecords() error {
 	db := database.NewSQLiteDatabase()
 	categoryDAL := dal.NewCategoryDAL(db.GetDb())
 	runDAL := dal.NewRunDAL(db.GetDb())
+
+	// logger
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	// we need to call SQLite to get the games
 	// so we can load their respective records
@@ -26,21 +33,20 @@ func LoadRecords() error {
 	// using game_id, get records and insert to other tables:
 	// runs, variables, categories
 	for _, game := range games {
+		log.Info().Str("gameId:", game.Id).Str("game: ", game.Name).Msg("loading game...")
 		records, err := speedrun.GetRecords(game)
 		if err != nil {
+			log.Error().AnErr("speedrun.GetRecords ", err).Msg("error")
 			return err
 		}
-		fmt.Printf("%v %v\n", game.Name, game.Id)
 
 		for _, record := range records.Data {
-			fmt.Println(record)
-
 			// category
 			categoryId, err := categoryDAL.Create(ctx, game.Id, record.Category)
 			if err != nil {
 				return err
 			}
-			fmt.Println("CATEGORY: ", record.Category.Data.Name)
+			log.Info().Str("categoryId", record.Category.Data.Id).Str("category:", record.Category.Data.Name).Msg("loaded category")
 
 			// runs
 			for _, run := range record.Runs {
@@ -49,7 +55,7 @@ func LoadRecords() error {
 				}
 			}
 		}
-		fmt.Printf("Completed load for %v \n", game.Name)
+		log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("loaded game!")
 	}
 	return nil
 }
