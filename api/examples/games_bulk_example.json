@@ -1,0 +1,37 @@
+{
+    "data": [
+        {
+            "id": "y65rm041",
+            "names": {
+                "international": " BIRDIE WING -Golf Girls' Story-",
+                "japanese": null
+            },
+            "abbreviation": "_birdie_wing_golf_girls_story",
+            "weblink": "https://www.speedrun.com/_birdie_wing_golf_girls_story"
+        },
+        {
+            "id": "j1n4pkx6",
+            "names": {
+                "international": " Body by Milk Race and Refuel",
+                "japanese": null
+            },
+            "abbreviation": "bbmrr",
+            "weblink": "https://www.speedrun.com/bbmrr"
+        }
+    ],
+    "pagination": {
+        "offset": 2,
+        "max": 2,
+        "size": 2,
+        "links": [
+            {
+                "rel": "prev",
+                "uri": "https://www.speedrun.com/api/v1/games?_bulk=yes&max=2"
+            },
+            {
+                "rel": "next",
+                "uri": "https://www.speedrun.com/api/v1/games?_bulk=yes&max=2&offset=4"
+            }
+        ]
+    }
+}
