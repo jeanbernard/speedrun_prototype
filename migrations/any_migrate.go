@@ -17,11 +17,11 @@ func main() {
 // TODO: find another way to add models
 func anyMigrate(db database.Database) error {
 	//delete tables every time for now
-	if err := db.GetDb().Migrator().DropTable(&dbmodels.Run{}, &dbmodels.Game{}, &dbmodels.Variable{}, &dbmodels.Value{}, &dbmodels.Category{}); err != nil {
+	if err := db.GetDb().Migrator().DropTable(&dbmodels.Run{}, &dbmodels.Game{}, &dbmodels.Category{}); err != nil {
 		panic("failed dropping tables")
 	}
 
-	if err := db.GetDb().AutoMigrate(&dbmodels.Run{}, &dbmodels.Game{}, &dbmodels.Variable{}, &dbmodels.Value{}, &dbmodels.Category{}); err != nil {
+	if err := db.GetDb().AutoMigrate(&dbmodels.Run{}, &dbmodels.Game{}, &dbmodels.Category{}); err != nil {
 		panic("failed migration")
 	}
 	return nil

@@ -61,7 +61,7 @@ func GetRecords(game dbmodels.Game) (models.RecordsResponse, error) {
 
 	resp, err := http.Get(
 		fmt.Sprintf(
-			"https://www.speedrun.com/api/v1/games/%v/records?embed=variables,category&top=1&skip-empty=true&max=10",
+			"https://www.speedrun.com/api/v1/games/%v/records?embed=category&top=1&skip-empty=true&max=10",
 			game.Id))
 
 	if err != nil {

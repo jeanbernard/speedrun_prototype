@@ -42,7 +42,8 @@ type Variable struct {
 }
 
 type PlayersRun struct {
-	Id string `json:"id,omitempty"`
+	Id  string `json:"id,omitempty"`
+	URI string `json:"uri,omitempty"`
 }
 
 type Link struct {

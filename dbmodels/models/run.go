@@ -27,10 +27,8 @@ type Run struct {
 	Id         string `gorm:"primaryKey"`
 	GameID     string
 	CategoryID string
-	PlayerId   string
 	Values     JSONB `gorm:"type:json"`
-	//Variables  []Variable
-	Level    *string
-	VideoURI string
-	Runtime  float64
+	Level      *string
+	VideoURI   string
+	Runtime    float64
 }

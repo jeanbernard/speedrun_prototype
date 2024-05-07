@@ -18,7 +18,8 @@ func NewRunDAL(db *gorm.DB) *Run {
 	return &Run{RunDAO: dao.NewRunDAO(db)}
 }
 
-func (dal *Run) Create(ctx context.Context, gameId, categoryId string, resp models.Run) (string, error) {
+// TODO: Deal with multiple video URIs and Player IDs
+func (dal *Run) Create(ctx context.Context, gameId, categoryId string, resp models.Run) error {
 	run := dbmodels.Run{
 		Id:         resp.Id,
 		GameID:     gameId,
@@ -29,12 +30,10 @@ func (dal *Run) Create(ctx context.Context, gameId, categoryId string, resp mode
 		Values:     resp.Values,
 	}
 
-	runId, err := dal.RunDAO.Create(ctx, run)
-	if err != nil {
-		return runId, err
+	if err := dal.RunDAO.Create(ctx, run); err != nil {
+		return err
 	}
-
-	return runId, nil
+	return nil
 }
 
 func (dal *Run) GetAll(ctx context.Context) ([]dbmodels.Run, error) {

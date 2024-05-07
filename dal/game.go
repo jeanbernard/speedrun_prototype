@@ -22,7 +22,6 @@ func (dal *Game) Create(ctx context.Context, resp models.GamesResponse) error {
 		Id:   resp.GamesData.Id,
 		Name: resp.GamesData.Names["international"],
 	}
-
 	return dal.gameDAO.Create(ctx, game)
 }
 

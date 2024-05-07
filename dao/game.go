@@ -16,7 +16,10 @@ func NewGameDAO(db *gorm.DB) *GameDAO {
 }
 
 func (g *GameDAO) Create(ctx context.Context, game models.Game) error {
-	return g.DB.Create(&game).Error
+	if err := g.DB.FirstOrCreate(&game).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func (g *GameDAO) CreateBulk(ctx context.Context, game []models.Game) error {
