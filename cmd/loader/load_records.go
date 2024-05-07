@@ -40,22 +40,26 @@ func LoadRecords() error {
 			return err
 		}
 
-		for _, record := range records.Data {
-			// category
-			categoryId, err := categoryDAL.Create(ctx, game.Id, record.Category)
-			if err != nil {
-				return err
-			}
-			log.Info().Str("categoryId", record.Category.Data.Id).Str("category:", record.Category.Data.Name).Msg("loaded category")
-
-			// runs
-			for _, run := range record.Runs {
-				if err := runDAL.Create(ctx, game.Id, categoryId, run.Run); err != nil {
+		if len(records.Data) != 0 {
+			for _, record := range records.Data {
+				// category
+				categoryId, err := categoryDAL.Create(ctx, game.Id, record.Category)
+				if err != nil {
 					return err
 				}
+				log.Info().Str("categoryId", record.Category.Data.Id).Str("category:", record.Category.Data.Name).Msg("loaded category")
+
+				// runs
+				for _, run := range record.Runs {
+					if err := runDAL.Create(ctx, game.Id, categoryId, run.Run); err != nil {
+						return err
+					}
+				}
 			}
+			log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("loaded game!")
+		} else {
+			log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("NO RUNS!")
 		}
-		log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("loaded game!")
 	}
 	return nil
 }
