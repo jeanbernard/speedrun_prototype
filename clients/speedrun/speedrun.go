@@ -37,7 +37,29 @@ func GetGames() (models.GamesResponse, error) {
 func GetGamesBulk() (models.GamesBulkResponse, error) {
 	var game models.GamesBulkResponse
 
-	resp, err := http.Get("https://www.speedrun.com/api/v1/games?_bulk=yes&max=20")
+	resp, err := http.Get("https://www.speedrun.com/api/v1/games?_bulk=yes&max=1000")
+	if err != nil {
+		return game, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return game, err
+	}
+
+	if err := json.Unmarshal(body, &game); err != nil {
+		return game, err
+	}
+
+	return game, nil
+}
+
+func GetGamesBulkPagination(URI string) (models.GamesBulkResponse, error) {
+	var game models.GamesBulkResponse
+
+	resp, err := http.Get(URI)
 	if err != nil {
 		return game, err
 	}
