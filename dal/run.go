@@ -26,6 +26,7 @@ func (dal *Run) Create(ctx context.Context, gameId, categoryId string, resp mode
 		Level:      &resp.Level,
 		Runtime:    resp.Times.PrimaryTime,
 		VideoURI:   resp.Videos.Links[0].URI,
+		Values:     resp.Values,
 	}
 
 	runId, err := dal.RunDAO.Create(ctx, run)
@@ -34,4 +35,8 @@ func (dal *Run) Create(ctx context.Context, gameId, categoryId string, resp mode
 	}
 
 	return runId, nil
+}
+
+func (dal *Run) GetAll(ctx context.Context) ([]dbmodels.Run, error) {
+	return dal.RunDAO.GetAll(ctx)
 }

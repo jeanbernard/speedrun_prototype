@@ -1,5 +1,7 @@
 package models
 
+import "developer/any/dbmodels/models"
+
 type PlayerNames struct {
 	International string `json:"international,omitempty"`
 	Japanese      string `json:"japanese,omitempty"`
@@ -56,12 +58,12 @@ type RunTime struct {
 }
 
 type Run struct {
-	Id      string            `json:"id,omitempty"`
-	Level   string            `json:"level,omitempty"`
-	Values  map[string]string `json:"values,omitempty"`
-	Videos  Video             `json:"videos,omitempty"`
-	Times   RunTime           `json:"times,omitempty"`
-	Players []PlayersRun      `json:"players,omitempty"`
+	Id      string       `json:"id,omitempty"`
+	Level   string       `json:"level,omitempty"`
+	Values  models.JSONB `json:"values,omitempty"`
+	Videos  Video        `json:"videos,omitempty"`
+	Times   RunTime      `json:"times,omitempty"`
+	Players []PlayersRun `json:"players,omitempty"`
 }
 
 type Runs struct {

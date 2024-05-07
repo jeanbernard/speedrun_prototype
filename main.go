@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"developer/any/clients/speedrun"
 	"developer/any/dal"
 	database "developer/any/db"
 	dbmodels "developer/any/dbmodels/models"
@@ -15,17 +14,33 @@ func main() {
 	ctx := context.Background()
 	db := database.NewSQLiteDatabase()
 
-	gameResp, err := speedrun.GetGames()
+	runDAL := dal.NewRunDAL(db.GetDb())
+	runs, err := runDAL.GetAll(ctx)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 
-	gameDAL := dal.NewGameDAL(db.GetDb())
-	err = gameDAL.Create(ctx, gameResp)
-	if err != nil {
-		return
-	}
+	printStruct(runs[0])
+
+	// gameResp, err := speedrun.GetGames()
+	// if err != nil {
+	// 	fmt.Println("Error:", err)
+	// 	return
+	// }
+
+	// gameDAL := dal.NewGameDAL(db.GetDb())
+
+	// games, err := gameDAL.GetAll(ctx)
+	// if err != nil {
+	// 	fmt.Println("Error:", err)
+	// 	return
+	// }
+
+	// err = gameDAL.Create(ctx, gameResp)
+	// if err != nil {
+	// 	return
+	// }
 
 	// spr, err := speedrun.GetRecords()
 	// if err != nil {
