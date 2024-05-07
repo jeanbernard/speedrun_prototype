@@ -19,7 +19,12 @@ func NewRunDAL(db *gorm.DB) *Run {
 }
 
 // TODO: Deal with multiple video URIs and Player IDs
+// Also deal with some videos being "Text" only. lol.
 func (dal *Run) Create(ctx context.Context, gameId, categoryId string, resp models.Run) error {
+	if resp.Videos == nil || len(resp.Videos.Links) == 0 {
+		return nil
+	}
+
 	run := dbmodels.Run{
 		Id:         resp.Id,
 		GameID:     gameId,

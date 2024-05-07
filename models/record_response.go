@@ -62,7 +62,7 @@ type Run struct {
 	Id      string       `json:"id,omitempty"`
 	Level   string       `json:"level,omitempty"`
 	Values  models.JSONB `json:"values,omitempty"`
-	Videos  Video        `json:"videos,omitempty"`
+	Videos  *Video       `json:"videos,omitempty"`
 	Times   RunTime      `json:"times,omitempty"`
 	Players []PlayersRun `json:"players,omitempty"`
 }
