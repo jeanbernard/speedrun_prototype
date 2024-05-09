@@ -110,11 +110,11 @@ func writeToFile(file *os.File, game string) error {
 	return nil
 }
 
-func writer(ctx context.Context, file *os.File, game chan string) {
+func writer(ctx context.Context, file *os.File, writerCh <-chan string) {
 	for {
 		select {
-		case str := <-game:
-			if err := writeToFile(file, str); err != nil {
+		case game := <-writerCh:
+			if err := writeToFile(file, game); err != nil {
 				return
 			}
 		case <-ctx.Done():
