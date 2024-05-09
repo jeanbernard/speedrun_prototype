@@ -1,15 +1,17 @@
 package main
 
 import (
+	"context"
 	"developer/any/cmd/loader"
 )
 
 func main() {
-	if err := loader.LoadGames(); err != nil {
-		return
-	}
+	ctx := context.Background()
+	// if err := loader.LoadGames(ctx); err != nil {
+	// 	return
+	// }
 
-	if err := loader.LoadRecords(); err != nil {
+	if err := loader.LoadRecords(ctx); err != nil {
 		return
 	}
 }

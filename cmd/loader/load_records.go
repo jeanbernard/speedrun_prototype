@@ -21,6 +21,9 @@ func LoadRecords(ctx context.Context) error {
 	categoryDAL := dal.NewCategoryDAL(db.GetDb())
 	runDAL := dal.NewRunDAL(db.GetDb())
 
+	writerCh := make(chan string)
+	defer close(writerCh)
+
 	// logger
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
@@ -40,10 +43,21 @@ func LoadRecords(ctx context.Context) error {
 	rateLimit := rate.Limit(requestsPerMinute) / rate.Limit(duration.Seconds())
 	limiter := rate.NewLimiter(rateLimit, 1)
 
+	// open success file
+	file, err := os.OpenFile("cmd/loader/loader/success.txt", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	if err != nil {
+		log.Error().AnErr("loader.LoadRecords ", err).Msg("Failed to open file")
+		return err
+	}
+	defer file.Close()
+
+	go writer(ctx, file, writerCh)
+
 	// loop through every game
 	start := time.Now()
 	for _, game := range games {
 
+		// rate limiting wait until allowed to send request
 		if err := limiter.Wait(ctx); err != nil {
 			log.Error().AnErr("loader.LoadRecords ", err).Msg("error")
 			return err
@@ -72,12 +86,40 @@ func LoadRecords(ctx context.Context) error {
 					}
 				}
 			}
+
 			log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("loaded game!")
 		} else {
 			log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("NO RUNS!")
 		}
+
+		// write game to txt file
+		writerCh <- game.Name
 	}
 	elapsed := time.Since(start)
 	log.Info().Str("time elapsed to process 300 requests", elapsed.String()).Msg("time")
 	return nil
+}
+
+func writeToFile(file *os.File, game string) error {
+	_, err := file.WriteString(game + "\n")
+	if err != nil {
+		log.Error().AnErr("loader.LoadRecords ", err).Msg("error writing to success file")
+		return err
+	}
+
+	return nil
+}
+
+func writer(ctx context.Context, file *os.File, game chan string) {
+	for {
+		select {
+		case str := <-game:
+			if err := writeToFile(file, str); err != nil {
+				return
+			}
+		case <-ctx.Done():
+			file.Close()
+			return
+		}
+	}
 }
