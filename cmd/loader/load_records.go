@@ -1,11 +1,13 @@
 package loader
 
 import (
+	"bufio"
 	"context"
 	"developer/any/clients/speedrun"
 	"developer/any/dal"
 	database "developer/any/db"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -21,8 +23,7 @@ func LoadRecords(ctx context.Context) error {
 	categoryDAL := dal.NewCategoryDAL(db.GetDb())
 	runDAL := dal.NewRunDAL(db.GetDb())
 
-	writerCh := make(chan string)
-	defer close(writerCh)
+	var wg sync.WaitGroup
 
 	// logger
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
@@ -38,24 +39,38 @@ func LoadRecords(ctx context.Context) error {
 
 	// TODO: Maybe add this as a config?
 	// Speedrun API rate limit: 100 requests per minute
+	// https://github.com/speedruncomorg/api/blob/master/throttling.md
 	requestsPerMinute := 100
 	duration := 60 * time.Second
 	rateLimit := rate.Limit(requestsPerMinute) / rate.Limit(duration.Seconds())
 	limiter := rate.NewLimiter(rateLimit, 1)
 
 	// open success file
-	file, err := os.OpenFile("cmd/loader/loader/success.txt", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	file, err := os.OpenFile("cmd/loader/loader/success.txt", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		log.Error().AnErr("loader.LoadRecords ", err).Msg("Failed to open file")
 		return err
 	}
 	defer file.Close()
 
-	go writer(ctx, file, writerCh)
+	// put every game in the file in a map as key
+	loadedGames := map[string]struct{}{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		ln := scanner.Text()
+		loadedGames[ln] = struct{}{}
+	}
 
 	// loop through every game
 	start := time.Now()
 	for _, game := range games {
+
+		if _, ok := loadedGames[game.Name]; ok {
+			log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("game already loaded. skipping...")
+			continue
+		}
+
+		go writer(&wg, file, game.Name)
 
 		// rate limiting wait until allowed to send request
 		if err := limiter.Wait(ctx); err != nil {
@@ -91,10 +106,9 @@ func LoadRecords(ctx context.Context) error {
 		} else {
 			log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("NO RUNS!")
 		}
-
-		// write game to txt file
-		writerCh <- game.Name
 	}
+
+	wg.Wait()
 	elapsed := time.Since(start)
 	log.Info().Str("time elapsed to process 300 requests", elapsed.String()).Msg("time")
 	return nil
@@ -110,16 +124,12 @@ func writeToFile(file *os.File, game string) error {
 	return nil
 }
 
-func writer(ctx context.Context, file *os.File, writerCh <-chan string) {
-	for {
-		select {
-		case game := <-writerCh:
-			if err := writeToFile(file, game); err != nil {
-				return
-			}
-		case <-ctx.Done():
-			file.Close()
-			return
-		}
+// TODO: Need to handle error better
+func writer(wg *sync.WaitGroup, file *os.File, game string) {
+	defer wg.Done()
+
+	wg.Add(1)
+	if err := writeToFile(file, game); err != nil {
+		return
 	}
 }
