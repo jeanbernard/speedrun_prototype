@@ -13,8 +13,10 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func LoadRecords() error {
-	ctx := context.Background()
+func LoadRecords(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	db := database.NewSQLiteDatabase()
 	categoryDAL := dal.NewCategoryDAL(db.GetDb())
 	runDAL := dal.NewRunDAL(db.GetDb())
