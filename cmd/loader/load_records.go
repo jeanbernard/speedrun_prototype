@@ -6,9 +6,11 @@ import (
 	"developer/any/dal"
 	database "developer/any/db"
 	"os"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/time/rate"
 )
 
 func LoadRecords() error {
@@ -29,10 +31,22 @@ func LoadRecords() error {
 		return err
 	}
 
+	// TODO: Maybe add this as a config?
+	// Speedrun API rate limit: 100 requests per minute
+	requestsPerMinute := 100
+	duration := 60 * time.Second
+	rateLimit := rate.Limit(requestsPerMinute) / rate.Limit(duration.Seconds())
+	limiter := rate.NewLimiter(rateLimit, 1)
+
 	// loop through every game
-	// using game_id, get records and insert to other tables:
-	// runs, variables, categories
+	start := time.Now()
 	for _, game := range games {
+
+		if err := limiter.Wait(ctx); err != nil {
+			log.Error().AnErr("loader.LoadRecords ", err).Msg("error")
+			return err
+		}
+
 		log.Info().Str("gameId:", game.Id).Str("game: ", game.Name).Msg("loading game...")
 		records, err := speedrun.GetRecords(game)
 		if err != nil {
@@ -47,7 +61,7 @@ func LoadRecords() error {
 				if err != nil {
 					return err
 				}
-				log.Info().Str("categoryId", record.Category.Data.Id).Str("category:", record.Category.Data.Name).Msg("loaded category")
+				log.Debug().Str("categoryId", record.Category.Data.Id).Str("category:", record.Category.Data.Name).Msg("loaded category")
 
 				// runs
 				for _, run := range record.Runs {
@@ -61,5 +75,7 @@ func LoadRecords() error {
 			log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("NO RUNS!")
 		}
 	}
+	elapsed := time.Since(start)
+	log.Info().Str("time elapsed to process 300 requests", elapsed.String()).Msg("time")
 	return nil
 }
