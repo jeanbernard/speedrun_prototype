@@ -3,6 +3,7 @@ package dal
 import (
 	"context"
 	"developer/any/dao"
+	"errors"
 
 	dbmodels "developer/any/dbmodels/models"
 	"developer/any/models"
@@ -21,8 +22,12 @@ func NewRunDAL(db *gorm.DB) *Run {
 // TODO: Deal with multiple video URIs and Player IDs
 // Also deal with some videos being "Text" only. lol.
 func (dal *Run) Create(ctx context.Context, gameId, categoryId string, resp models.Run) error {
-	if resp.Videos == nil || len(resp.Videos.Links) == 0 {
-		return nil
+	if resp.Videos == nil {
+		return errors.New("does not contain videos")
+	}
+
+	if len(resp.Videos.Links) == 0 {
+		return errors.New("does not contain links for videos")
 	}
 
 	run := dbmodels.Run{

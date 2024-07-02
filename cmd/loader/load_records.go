@@ -6,6 +6,7 @@ import (
 	"developer/any/clients/speedrun"
 	"developer/any/dal"
 	database "developer/any/db"
+	"fmt"
 	"os"
 	"sync"
 	"time"
@@ -46,16 +47,22 @@ func LoadRecords(ctx context.Context) error {
 	limiter := rate.NewLimiter(rateLimit, 1)
 
 	// open success file
-	file, err := os.OpenFile("cmd/loader/loader/success.txt", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
+	successFile, err := openFile("cmd/loader/loader/success.txt", Success)
 	if err != nil {
-		log.Error().AnErr("loader.LoadRecords ", err).Msg("Failed to open file")
 		return err
 	}
-	defer file.Close()
+	defer successFile.Close()
+
+	// open error file
+	errorFile, err := openFile("cmd/loader/loader/error.txt", Error)
+	if err != nil {
+		return err
+	}
+	defer errorFile.Close()
 
 	// put every game in the file in a map as key
 	loadedGames := map[string]struct{}{}
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(successFile)
 	for scanner.Scan() {
 		ln := scanner.Text()
 		loadedGames[ln] = struct{}{}
@@ -69,8 +76,6 @@ func LoadRecords(ctx context.Context) error {
 			log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("game already loaded. skipping...")
 			continue
 		}
-
-		go writer(&wg, file, game.Name)
 
 		// rate limiting wait until allowed to send request
 		if err := limiter.Wait(ctx); err != nil {
@@ -97,11 +102,13 @@ func LoadRecords(ctx context.Context) error {
 				// runs
 				for _, run := range record.Runs {
 					if err := runDAL.Create(ctx, game.Id, categoryId, run.Run); err != nil {
-						return err
+						go writer(&wg, errorFile, game.Name, run.Run.Id, Error, err.Error())
+						continue
 					}
 				}
 			}
 
+			go writer(&wg, successFile, game.Name, "", Success, "")
 			log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("loaded game!")
 		} else {
 			log.Info().Str("gameId:", game.Id).Str("game:", game.Name).Msg("NO RUNS!")
@@ -114,7 +121,33 @@ func LoadRecords(ctx context.Context) error {
 	return nil
 }
 
-func writeToFile(file *os.File, game string) error {
+func openFile(filePath string, fileType FileType) (*os.File, error) {
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
+	if err != nil {
+		log.Error().AnErr("loader.LoadRecords ", err).Msg(fmt.Sprintf("Failed to open %v file", fileType))
+		return nil, err
+	}
+
+	return file, nil
+}
+
+// TODO: Need to handle error better
+func writer(wg *sync.WaitGroup, file *os.File, game, runId string, fileType FileType, errMsg string) {
+	defer wg.Done()
+	wg.Add(1)
+
+	if fileType == Error {
+		if err := writeToErrorFile(file, game, runId, errMsg); err != nil {
+			return
+		}
+	} else {
+		if err := writeToSuccessFile(file, game); err != nil {
+			return
+		}
+	}
+}
+
+func writeToSuccessFile(file *os.File, game string) error {
 	_, err := file.WriteString(game + "\n")
 	if err != nil {
 		log.Error().AnErr("loader.LoadRecords ", err).Msg("error writing to success file")
@@ -124,12 +157,12 @@ func writeToFile(file *os.File, game string) error {
 	return nil
 }
 
-// TODO: Need to handle error better
-func writer(wg *sync.WaitGroup, file *os.File, game string) {
-	defer wg.Done()
-
-	wg.Add(1)
-	if err := writeToFile(file, game); err != nil {
-		return
+func writeToErrorFile(file *os.File, game, runId string, errorMsg string) error {
+	_, err := file.WriteString(game + " " + runId + " " + errorMsg + "\n")
+	if err != nil {
+		log.Error().AnErr("loader.LoadRecords ", err).Msg("error writing to error file")
+		return err
 	}
+
+	return nil
 }
