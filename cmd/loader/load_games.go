@@ -23,10 +23,6 @@ func LoadGames() error {
 		return err
 	}
 
-	// // check if there are more pages?
-	// if resp.Pagination.Size < resp.Pagination.Max {
-	// 	// we are on the last page
-	// }
 	cnt := 1
 	log.Info().Int("Requests made:", cnt).Msg("requests")
 	nextResp := resp

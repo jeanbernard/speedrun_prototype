@@ -4,6 +4,7 @@ import (
 	"context"
 	"developer/any/dao"
 	"errors"
+	"fmt"
 
 	dbmodels "developer/any/dbmodels/models"
 	"developer/any/models"
@@ -48,4 +49,18 @@ func (dal *Run) Create(ctx context.Context, gameId, categoryId string, resp mode
 
 func (dal *Run) GetAll(ctx context.Context) ([]dbmodels.Run, error) {
 	return dal.RunDAO.GetAll(ctx)
+}
+
+// Make new func to pass build time as param
+// to rando run query
+func (dal *Run) GetRandomRun(ctx context.Context, buildTime float64) (dbmodels.Run, error) {
+	start, end := getBuildTimeRange(buildTime)
+	return dal.RunDAO.GetRandomRun(ctx, start, end)
+}
+
+func getBuildTimeRange(buildTime float64) (float64, float64) {
+	start := buildTime - 5
+	end := buildTime + 5
+	fmt.Println(start, end)
+	return start, end
 }
